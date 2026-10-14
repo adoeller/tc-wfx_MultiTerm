@@ -3,6 +3,8 @@
 SerialTerm is a serial and TCP/Telnet terminal for Total Commander on Windows. Open a COM port or a saved network connection in a separate terminal window, in Lister, or directly in the Quick View panel.
 
 It supports text and hexadecimal output, ANSI colors, selectable character encoding, timestamps, and connection history. Both 32-bit and 64-bit Total Commander are supported.
+![Lister](lister.png)
+![Settings](settings.png)
 
 ## Installation
 
