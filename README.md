@@ -1,6 +1,6 @@
 # MultiTerm
 
-MultiTerm is a serial, TCP/Telnet, and SSH terminal for Total Commander on Windows. Open a COM port or a saved network connection in a separate terminal window, in Lister, or directly in the Quick View panel.
+MultiTerm is a serial, TCP/Telnet, SSH, and local command-line terminal for Total Commander on Windows. Open a connection directly in the current file panel, in a separate terminal window, in Lister, or in the opposite Quick View panel.
 
 Serial and TCP/Telnet connections support text and hexadecimal output, ANSI colors, selectable character encoding, timestamps, and connection history. SSH uses an embedded PuTTYNG terminal. Both 32-bit and 64-bit Total Commander are supported.
 
@@ -18,7 +18,7 @@ The supplied plugin files are:
 2. In Total Commander, open **Configuration → Options → Plugins**.
 3. Under **File system plugins (.WFX)**, choose **Configure → Add** and select `MultiTerm.wfx`.
 
-64-bit Total Commander automatically uses `MultiTerm.wfx64`.
+64-bit Total Commander automatically uses `MultiTerm.wfx64`. For local shells, keep the supplied `MultiTermShell32.exe`, `MultiTermShell64.exe`, `MultiTermVT32.dll`, `MultiTermVT64.dll`, and `libvterm-LICENCE.txt` beside the plugin files. Local shells require Windows 10 version 1809 or newer.
 
 Open **Network Neighborhood** in Total Commander and select **MultiTerm**. You can now open terminals with **Enter**.
 
@@ -49,9 +49,10 @@ The MultiTerm list contains:
 
 | Entry | Purpose |
 |---|---|
-| `[ Manage connections… ]` | Manage saved TCP/SSH connections and configure terminal appearance. Press **Enter** to open it. |
+| `[ Manage connections… ]` | Manage saved TCP/SSH connections and local shells, and configure terminal appearance. Press **Enter** to open it. |
 | `COM7  Silicon Labs…` | An available serial port, with its device description. |
 | `TCP - <name>` | A saved TCP or Telnet connection. |
+| `CMD - <name>` | A local CMD shell, optionally enhanced with Clink. |
 | `SSH - <name>` | A direct SSH connection or a saved PuTTY profile; shown with a terminal-and-lock icon. |
 
 The interface supports English, German, Ukrainian, and Russian. This guide uses the English labels.
@@ -74,6 +75,20 @@ The defaults are **115200 baud, 8 data bits, no parity, 1 stop bit**, no flow co
 5. Click **Save**, close the dialog, and open the new `TCP - <name>` entry.
 
 You can edit or delete saved connections in the same dialog. **F8** on a TCP entry also deletes the saved connection. If the list does not refresh immediately, press **Ctrl+R**.
+
+### Add a local CMD / Clink shell
+
+1. In **Manage connections… → Connections**, choose **New**, enter a name, and select **Local shell (CMD / Clink)**.
+2. Set the **Folder**. Environment variables are accepted; an empty field uses your Windows user profile folder.
+3. Choose **Configured folder**, or **Other panel** to start in the active tab of the opposite TC panel. If it is not a local folder, the configured folder is used instead.
+4. Enable **Use Clink if available** if desired. The Clink path can name its folder or an EXE. MultiTerm also looks in `%COMMANDER_PATH%\plugins\tools\clink`, beside the plugin in a `clink` folder, in common installation folders, and on PATH. Missing Clink automatically falls back to normal CMD; no Clink installation is required.
+5. Enable **Keep session running when the view closes** if you want to reuse this shell. Click **Save**, then open the **CMD - …** entry with Enter, F3, or Ctrl+Q.
+
+The shell toolbar provides **Start**, **End session**, **Copy**, **Paste**, and **Change to panel dir**. To copy, mark text with the mouse and click **Copy**; Ctrl+Shift+C/V and Shift+Insert are also supported. Scroll the output with the mouse wheel. The **Change to panel dir** button changes to the opposite panel's folder: use it at an idle CMD prompt, with an empty input line. An archive or plugin path cannot be used as a local directory.
+
+With **Keep session running** enabled, closing Lister or switching Quick View hides the shell. Reopening the same entry shows the same CMD process, current directory, environment, and running commands. Its start-folder setting is used only when starting a new session; reopening does not change the current directory. The same session has one attached view at a time; opening it elsewhere moves its display there. **End session** explicitly terminates the shell and its child programs, even when keeping the session is enabled. **Start** can then open a fresh shell.
+
+Sessions last until Total Commander exits. Disabling the keep-running option makes closing the attached view end the session. Clink remains an optional, separately maintained installation; MultiTerm does not modify its global autorun settings. If Clink is enabled but cannot be found, a separate status line reports **Clink not found; using CMD.** Normal CMD remains available; no error dialog interrupts startup.
 
 ### Add an SSH connection
 
@@ -106,7 +121,7 @@ SSH connections have separate **Connect automatically** and **Also connect in Qu
 
 Fonts, colors, scrollback, and other SSH terminal preferences come from the selected PuTTY/KiTTY profile, or from the client's default settings for direct and portable profiles. MultiTerm's hex view, timestamps, counters, retained history, and automatic reconnection do not apply to the embedded SSH terminal. The unsupported history/reconnection options are disabled in SSH properties. Reconnect manually with **Connect**. After changing a connection's type or SSH settings, disconnect and connect again, or reopen its terminal.
 
-Use **Paste** in the SSH toolbar to insert clipboard text through the client's own paste function. Right-click the upper toolbar/status area for a **Paste** context menu. In the PuTTYNG terminal itself, **Ctrl+right-click** opens its native context menu. The Paste button becomes available when the terminal is ready and is disabled after disconnecting.
+Use **Paste** in the SSH toolbar to insert clipboard text through the client's own paste function. Select text with the mouse in the SSH terminal, then use **Copy** to copy the client's most recent selection. This copies the selection rather than the whole terminal. Depending on the client's settings, selecting text may already copy it automatically. Right-click the upper toolbar/status area for **Paste** and **Copy**. In the PuTTYNG terminal itself, **Ctrl+right-click** opens its native context menu. Both buttons become available when the terminal is ready and are disabled after disconnecting. MultiTerm does not inspect the selection or clipboard contents; the SSH client handles copying.
 
 PuTTYNG's terminal receives its own keystrokes. When its terminal has focus, some shortcuts belong to PuTTY; return focus to the TC file panel to use TC navigation shortcuts.
 
@@ -114,14 +129,18 @@ PuTTYNG's terminal receives its own keystrokes. When its terminal has focus, som
 
 | Key | Action |
 |---|---|
-| **Enter** | Open a separate terminal window. Serial/TCP entries share their terminal window; SSH entries open independent windows. |
+| **Enter / double-click** | Open the terminal in the current panel. Use **Back to connection list** above the terminal to return. |
 | **F3** | Open the terminal in Total Commander's Lister window. |
-| **Ctrl+Q** | Show the terminal in the Quick View panel. Selecting another entry switches the preview and disconnects the previous connection. |
-
-Quick View activates the terminal input immediately for serial, TCP/Telnet, and SSH connections. For SSH, input becomes active when the client terminal is ready. Automatic connection still follows the entry's connection settings.
+| **Ctrl+Q** | Show the terminal in the Quick View panel. Selecting another entry switches the preview. Local shells can keep running as described above. |
 | **Alt+Enter** | Open the selected entry's properties. |
 
+Quick View activates the terminal input immediately for serial, TCP/Telnet, SSH, and local shells. For SSH, input becomes active when the client terminal is ready. Automatic connection still follows the entry's connection settings.
+
 The management entry shows an empty preview when selected with F3 or Ctrl+Q. Use Enter to open its settings dialog.
+
+Opening in the current panel requires Total Commander 9 or newer. On **Manage connections… → General**, disable **Enter / double-click opens in the current panel** to use separate windows instead. If the panel cannot be identified, MultiTerm automatically uses a separate window. This preference is saved as `[Plugin] OpenInPanel=1` (default) or `0` in `multiterm.ini`.
+
+Each side can display its own terminal. The existing file list remains underneath, preserving the selected entry. **Back to connection list**, switching that side's tab, or navigating to another directory closes its terminal view. COM/TCP and SSH connections disconnect when their view closes; local CMD/Clink sessions follow their **Keep session running** option. Enter uses **Connect automatically**, independently of the separate Quick View connection option. The management entry continues to open its settings dialog.
 
 ### Automatic connection and reconnection
 
@@ -133,7 +152,7 @@ Each port or network connection has its own options in **Properties**:
 
 When automatic connection is disabled, click **Connect** to start the connection. Automatic reconnection waits until you do so. Clicking **Disconnect** stops automatic reconnection until you connect again.
 
-Changes to an entry's properties apply immediately to its open separate terminal window. Reopen an existing F3 or Quick View terminal to use changed properties.
+Changes to an entry's properties apply immediately to its open separate terminal window. Reopen an existing panel, F3, or Quick View terminal to use changed properties.
 
 ## Using the terminal
 
